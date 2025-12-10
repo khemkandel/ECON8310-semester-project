@@ -43,14 +43,14 @@ pip-wheel-metadata/
 # Data and outputs
 data/
 
-# Large media - videos
-*.mp4
-*.mov
-*.avi
-*.mkv
-*.webm
-*.flv
-*.wmv
+# # Large media - videos
+# *.mp4
+# *.mov
+# *.avi
+# *.mkv
+# *.webm
+# *.flv
+# *.wmv
 
 # Large media - images
 *.png
