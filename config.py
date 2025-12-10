@@ -5,7 +5,8 @@ Configuration file for baseball moving object detection project.
 # ============================================================================
 # DATA CONFIGURATION
 # ============================================================================
-BASE_FOLDER = "C:/Users/Tech/OneDrive - University of Nebraska at Omaha/DataScience/BusinessForecasting-ECON8310/ECON8310-semester-project"
+import os
+BASE_FOLDER = os.path.dirname(os.path.abspath(__file__))
 VIDEO_FOLDER = 'videos'
 ANNOTATION_FOLDER = 'annotations'
 EXTRACT_VIDEOS = False
