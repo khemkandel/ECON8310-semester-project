@@ -53,6 +53,7 @@ class BaseballModelTrainer:
         )
         
         # Split dataset
+        #Subset objects (PyTorch wrapper around the original Dataset)
         train_size = int(TRAIN_RATIO * len(full_dataset))
         test_size = len(full_dataset) - train_size
         self.train_dataset, self.test_dataset = random_split(full_dataset, [train_size, test_size])
@@ -76,7 +77,7 @@ class BaseballModelTrainer:
         print(f"Test samples: {len(self.test_dataset)}")
 
     def _initialize_model(self):
-        """Initialize Faster R-CNN model with custom head."""
+        #Initialize Faster R-CNN model with custom head.
         print("\nInitializing model...")
         
         model = torchvision.models.detection.fasterrcnn_resnet50_fpn(
@@ -85,6 +86,12 @@ class BaseballModelTrainer:
         )
         
         # Replace classification head for custom classes
+        """
+        Creates a new FastRCNNPredictor with:
+        Same input features (1024)
+        Number of classes (3: background, non-moving, moving)
+        Replaces the old predictor entirely
+        """
         in_features = model.roi_heads.box_predictor.cls_score.in_features
         model.roi_heads.box_predictor = FastRCNNPredictor(in_features, num_classes=MODEL_NUM_CLASSES)
         
@@ -113,18 +120,17 @@ class BaseballModelTrainer:
         
         moving_object_indices = []
         non_moving_object_indices = []
-        
-        with torch.no_grad():
-            for batch_idx, (images, labels, bboxs) in enumerate(self.test_loader):
-                for img_idx, (img_labels, img_boxes) in enumerate(zip(labels, bboxs)):
-                    has_moving = (img_labels == 1).sum().item() > 0
-                    has_non_moving = (img_labels == 0).sum().item() > 0
-                    
-                    if has_moving:
-                        moving_object_indices.append((batch_idx, img_idx))
-                    elif has_non_moving:
-                        non_moving_object_indices.append((batch_idx, img_idx))
-        
+
+        for batch_idx, (images, labels, bboxs) in enumerate(self.test_loader):
+            for img_idx, (img_labels, img_boxes) in enumerate(zip(labels, bboxs)):
+                has_moving = (img_labels == 1).sum().item() > 0
+                has_non_moving = (img_labels == 0).sum().item() > 0
+                
+                if has_moving:
+                    moving_object_indices.append((batch_idx, img_idx))
+                elif has_non_moving:
+                    non_moving_object_indices.append((batch_idx, img_idx))
+    
         print(f"Test set categorization:")
         print(f"  Images with MOVING objects: {len(moving_object_indices)}")
         print(f"  Images with NON-MOVING objects only: {len(non_moving_object_indices)}")
@@ -145,10 +151,8 @@ class BaseballModelTrainer:
         
         for epoch in range(NUM_EPOCHS):
             epoch_loss = 0.0
-            print(f"\n{'='*70}")
             print(f"Starting epoch {epoch+1}/{NUM_EPOCHS}...")
-            print(f"{'='*70}")
-
+    
             for images, labels, bboxs in self.train_loader:
                 images = [img.to(self.device) for img in images]
 
@@ -179,9 +183,7 @@ class BaseballModelTrainer:
 
     def evaluate(self):
         """Evaluate model on test set."""
-        print("\n" + "="*70)
-        print("EVALUATING ON TEST SET")
-        print("="*70)
+        print(f"\nEVALUATING ON TEST SET")
 
         self.model.eval()
         total_predictions = 0
@@ -191,8 +193,8 @@ class BaseballModelTrainer:
 
         with torch.no_grad():
             for batch_idx, (images, labels, bboxs) in enumerate(self.test_loader):
-                images_gpu = [img.to(self.device) for img in images]
-                outputs = self.model(images_gpu)
+                images = [img.to(self.device) for img in images]
+                outputs = self.model(images)
                 
                 for img_idx, output in enumerate(outputs):
                     boxes = output["boxes"].detach().cpu()
@@ -225,9 +227,7 @@ class BaseballModelTrainer:
         print("Evaluation complete.")
         
         # Print summary statistics
-        print("\n" + "="*70)
-        print("EVALUATION SUMMARY")
-        print("="*70)
+        print(f"\nEVALUATION SUMMARY")
         print(f"\nTest Set Statistics:")
         print(f"  Total GT objects: {gt_moving_count + gt_non_moving_count}")
         print(f"    - Non-moving: {gt_non_moving_count}")
@@ -242,23 +242,17 @@ class BaseballModelTrainer:
 
     def visualize_samples(self, moving_indices, non_moving_indices):
         """Visualize sample images from moving and non-moving sets."""
-        print("\n" + "="*70)
         print("VISUALIZATION - SAMPLE IMAGES FROM CATEGORIZED INDICES")
-        print("="*70)
 
         # Display moving object images
-        print("\n" + "-"*70)
-        print(f"DISPLAYING IMAGES WITH MOVING OBJECTS (Total: {len(moving_indices)})")
-        print("-"*70)
+        print(f"\nDISPLAYING IMAGES WITH MOVING OBJECTS (Total: {len(moving_indices)})")
         num_moving_to_display = min(NUM_MOVING_IMAGES_TO_DISPLAY, len(moving_indices))
         for idx in range(num_moving_to_display):
             batch_idx, img_idx = moving_indices[idx]
             self._display_image(batch_idx, img_idx, "MOVING")
 
         # Display non-moving object images
-        print("\n" + "-"*70)
-        print(f"DISPLAYING IMAGES WITH NON-MOVING OBJECTS ONLY (Total: {len(non_moving_indices)})")
-        print("-"*70)
+        print(f"\nDISPLAYING IMAGES WITH NON-MOVING OBJECTS ONLY (Total: {len(non_moving_indices)})")
         num_non_moving_to_display = min(NUM_NON_MOVING_IMAGES_TO_DISPLAY, len(non_moving_indices))
         for idx in range(num_non_moving_to_display):
             batch_idx, img_idx = non_moving_indices[idx]
@@ -269,8 +263,8 @@ class BaseballModelTrainer:
         with torch.no_grad():
             for test_batch_idx, (images, labels, bboxs) in enumerate(self.test_loader):
                 if test_batch_idx == batch_idx:
-                    images_gpu = [img.to(self.device) for img in images]
-                    outputs = self.model(images_gpu)
+                    images = [img.to(self.device) for img in images]
+                    outputs = self.model(images)
                     
                     output = outputs[img_idx]
                     boxes = output["boxes"].detach().cpu()

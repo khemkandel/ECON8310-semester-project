@@ -1,6 +1,5 @@
 """
 Configuration file for baseball moving object detection project.
-Contains all hyperparameters, paths, and settings.
 """
 
 # ============================================================================
@@ -30,8 +29,8 @@ TRAINED_MODEL_PATH = "model/fasterrcnn_moving_objects.pth"
 # ============================================================================
 # TRAINING CONFIGURATION
 # ============================================================================
-USE_TRAINED_MODEL = False  # Set to True to load trained weights instead of training
-CONFIDENCE_THRESHOLD = 0.5
+USE_TRAINED_MODEL = True  # Set to True to load trained weights instead of training
+CONFIDENCE_THRESHOLD = 0.3
 
 # ============================================================================
 # VISUALIZATION CONFIGURATION

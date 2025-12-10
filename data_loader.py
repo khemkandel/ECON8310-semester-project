@@ -2,18 +2,18 @@
 Baseball Dataset - PyTorch Dataset for baseball frames and annotations.
 Loads images and bounding box annotations from XML files.
 """
-
-import numpy as np
-import os
-import pandas as pd
+import cv2
 import torch
+import os
+import numpy as np
+import pandas as pd
 import xml.etree.ElementTree as xmlET
+import matplotlib.pyplot as plt
 from pathlib import Path
 from PIL import Image
 from urllib.parse import quote
 from torch.utils.data import Dataset
-import matplotlib.pyplot as plt
-import cv2
+from torch.utils.data import DataLoader
 
 
 class BaseballData(Dataset):
@@ -45,7 +45,7 @@ class BaseballData(Dataset):
 
         print("Initializing dataset...")
         self._frame_extractor() if self.extract_videos else None
-        self.raw_data = self._consolidate_from_github_repo()
+        self.raw_data = self._consolidate_frames_info()
         if self.raw_data.empty:
             raise ValueError("No data found — check repo path or annotations.")
         print(f"Dataset loaded with {len(self.raw_data)} samples")
@@ -181,7 +181,7 @@ class BaseballData(Dataset):
         return df
 
 
-    def _consolidate_from_github_repo(self):
+    def _consolidate_frames_info(self):
 
         """Fetch all XML files from 'annotations' folder and process them."""
 
@@ -198,7 +198,7 @@ class BaseballData(Dataset):
         frames_path = "frames"
 
 
-        # API Calls to get associated frames
+        # get associated frames
         #-----------------------------------------------------------------
 
         all_dfs = []
@@ -331,3 +331,13 @@ class BaseballData(Dataset):
         labels_list_torch = torch.tensor(label_list, dtype=torch.long)
 
         return image, labels_list_torch, coordinates_list_torch
+
+def main():
+    base_folder = "C:/Users/Tech/OneDrive - University of Nebraska at Omaha/DataScience/BusinessForecasting-ECON8310/econ8310-assignment3/econ8310_project"
+    traindata = BaseballData(base_folder=base_folder, videofolder='videos', annotation_folder='annotations', extract_videos=False,image_size=(224, 224))
+    loader = DataLoader(traindata, batch_size=8, shuffle=True,collate_fn=lambda x: traindata.collate_fn(x))
+    traindata.visualize_batch(loader)
+
+
+if __name__ == "__main__":
+    main()
