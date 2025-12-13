@@ -13,7 +13,7 @@ EXTRACT_VIDEOS = False
 IMAGE_SIZE = (224, 224)
 
 # Data split ratio
-TRAIN_RATIO = 0.3  # 30% training, 70% testing
+TRAIN_RATIO = 0.8  # 80% training, 20% testing
 
 # ============================================================================
 # MODEL CONFIGURATION
