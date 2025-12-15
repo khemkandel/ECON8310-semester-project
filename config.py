@@ -20,7 +20,7 @@ TRAIN_RATIO = 0.8  # 80% training, 20% testing
 # ============================================================================
 MODEL_NUM_CLASSES = 3  # 0=background, 1=non-moving, 2=moving
 MODEL_LEARNING_RATE = 1e-4
-NUM_EPOCHS = 5
+NUM_EPOCHS = 10
 BATCH_SIZE = 8
 
 # Model paths
@@ -30,8 +30,8 @@ TRAINED_MODEL_PATH = "model/fasterrcnn_moving_objects.pth"
 # ============================================================================
 # TRAINING CONFIGURATION
 # ============================================================================
-USE_TRAINED_MODEL = True  # Set to True to load trained weights instead of training
-CONFIDENCE_THRESHOLD = 0.3
+USE_TRAINED_MODEL = False  # Set to True to load trained weights instead of training
+CONFIDENCE_THRESHOLD = 0.7
 
 # ============================================================================
 # VISUALIZATION CONFIGURATION
